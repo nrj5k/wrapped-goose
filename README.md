@@ -1,4 +1,4 @@
-# Goose Sandbox
+# Wrapped Goose
 
 A bubblewrap-based sandbox wrapper for [Goose](https://github.com/block/goose) AI agent.
 
