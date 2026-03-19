@@ -1,0 +1,58 @@
+{
+  "main_thread": {
+    "mismatch_action": "allow",
+    "match_action": {"errno": 1},
+    "filter": [
+      {"syscall": "ptrace"},
+      {"syscall": "init_module"},
+      {"syscall": "finit_module"},
+      {"syscall": "delete_module"},
+      {"syscall": "kexec_load"},
+      {"syscall": "kexec_file_load"},
+      {"syscall": "reboot"},
+      {"syscall": "mount"},
+      {"syscall": "umount2"},
+      {"syscall": "pivot_root"},
+      {"syscall": "chroot"},
+      {"syscall": "mknod"},
+      {"syscall": "mknodat"},
+      {"syscall": "unshare"},
+      {"syscall": "setns"},
+      {"syscall": "kill"},
+      {"syscall": "tkill"},
+      {"syscall": "tgkill"},
+      {"syscall": "bpf"},
+      {"syscall": "perf_event_open"},
+      {"syscall": "add_key"},
+      {"syscall": "request_key"},
+      {"syscall": "keyctl"},
+      {"syscall": "process_vm_readv"},
+      {"syscall": "process_vm_writev"},
+      {"syscall": "open_by_handle_at"},
+      {"syscall": "name_to_handle_at"},
+      {"syscall": "settimeofday"},
+      {"syscall": "clock_settime"},
+      {"syscall": "adjtimex"},
+      {"syscall": "setdomainname"},
+      {"syscall": "sethostname"},
+      {"syscall": "syslog"},
+      {"syscall": "iopl"},
+      {"syscall": "ioperm"},
+      {"syscall": "acct"},
+      {"syscall": "uselib"},
+      {"syscall": "userfaultfd"},
+      {
+        "syscall": "socket",
+        "args": [
+          {"index": 0, "type": "dword", "op": "eq", "val": 17}
+        ]
+      },
+      {
+        "syscall": "socket",
+        "args": [
+          {"index": 0, "type": "dword", "op": "eq", "val": 16}
+        ]
+      }
+    ]
+  }
+}

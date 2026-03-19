@@ -85,9 +85,37 @@ for var in "${ENV_VARS[@]}"; do
   fi
 done
 
-# Network isolation flag
-GOOSE_ISOLATE_NETWORK=${GOOSE_ISOLATE_NETWORK:-""}
+# Isolation level: base (EPERM), lockdown (KILL), or none
+# Backward compatibility: if GOOSE_ISOLATE_NETWORK is set, treat as lockdown
+if [[ -n "${GOOSE_ISOLATE_NETWORK:-}" ]]; then
+  GOOSE_ISOLATION_LEVEL="lockdown"
+else
+  GOOSE_ISOLATION_LEVEL=${GOOSE_ISOLATION_LEVEL:-"base"}
+fi
+
 NETWORK_FLAGS=()
+SECCOMP_BPF=""
+SECCOMP_FD=""
+
+# Seccomp BPF directory
+SECCOMP_BPF_DIR="$SCRIPT_DIR/seccomp-configs/bpf"
+
+case "$GOOSE_ISOLATION_LEVEL" in
+  base)
+    SECCOMP_BPF="$SECCOMP_BPF_DIR/seccomp-base.bpf"
+    ;;
+  lockdown)
+    SECCOMP_BPF="$SECCOMP_BPF_DIR/seccomp-lockdown.bpf"
+    NETWORK_FLAGS+=(--unshare-all)
+    ;;
+  none)
+    SECCOMP_BPF=""
+    ;;
+  *)
+    echo "ERROR: GOOSE_ISOLATION_LEVEL must be 'base', 'lockdown', or 'none'" >&2
+    exit 1
+    ;;
+esac
 
 # Verify bwrap and goose exist
 if ! command -v bwrap >/dev/null 2>&1; then
@@ -122,17 +150,31 @@ if ! command -v goose >/dev/null 2>&1; then
   exit 1
 fi
 
+# Check seccomp filter
+if [[ -n "$SECCOMP_BPF" ]]; then
+  if [[ ! -f "$SECCOMP_BPF" ]]; then
+    echo "ERROR: Seccomp filter not found: $SECCOMP_BPF" >&2
+    echo "BPF files should be in: $SECCOMP_BPF_DIR/" >&2
+    exit 1
+  fi
+fi
+
 echo "Starting Goose in sandbox..."
 echo "   Project: $PROJECT_DIR"
 echo "   Config: $GOOSE_CONFIG"
 echo "   Extra PATH: $EXTRA_PATH"
+echo "   Isolation: $GOOSE_ISOLATION_LEVEL"
 
-if [[ -n "$GOOSE_ISOLATE_NETWORK" ]]; then
-  echo "   Network: ISOLATED"
-  NETWORK_FLAGS+=(--unshare-all)
+# Open seccomp filter as FD 3
+SECCOMP_ARGS=()
+if [[ -n "$SECCOMP_BPF" ]]; then
+  exec 3<"$SECCOMP_BPF"
+  SECCOMP_ARGS=(--seccomp 3)
 fi
+
 exec bwrap \
   "${NETWORK_FLAGS[@]}" \
+  "${SECCOMP_ARGS[@]}" \
   --new-session \
   --die-with-parent \
   --clearenv \

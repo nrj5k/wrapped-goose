@@ -6,10 +6,10 @@ A bubblewrap-based sandbox wrapper for [Goose](https://github.com/block/goose) A
 
 This script runs Goose inside a sandboxed environment using [bubblewrap](https://github.com/containers/bubblewrap), providing:
 
-- **Filesystem isolation**: Limited access to system directories (read-only), project directory (read-write)
+- **Filesystem isolation**: Read-only access to your system, Read-write access only to the project directory (and some cache files for npm, python, and uv, which can be removed if needed).
 - **Environment filtering**: Only whitelisted environment variables are passed through
 - **Network isolation** (optional): Complete network namespace isolation when needed
-- **UV/Python support**: Automatic binding of uv cache and Python interpreters
+- **Flexible path binding**: Bind any directories your tools need via `EXTRA_PATH`
 
 ## Requirements
 
@@ -97,11 +97,20 @@ The sandbox automatically binds these directories:
 | `~/.config/goose`                        | Read-write | Goose configuration            |
 | `~/.local/share/goose`                   | Read-write | Goose data                     |
 | `~/.local/state/goose`                   | Read-write | Goose state                    |
-| `~/.cache/uv`                            | Read-write | UV package cache               |
-| `~/.local/uvx`                           | Read-write | UVX tools                      |
-| `~/.local/share/uv/python`               | Read-only  | UV-managed Python interpreters |
 | `~/.npm/`                                | Read-write | NPM cache                      |
 | `/usr`, `/bin`, `/lib`, `/lib64`, `/etc` | Read-only  | System directories             |
+
+### Custom Path Binding
+
+Use `EXTRA_PATH` to bind any additional directories your tools need (e.g., UV cache, Python interpreters, virtual environments):
+
+```bash
+# Bind UV cache and Python interpreters
+EXTRA_PATH="$HOME/.cache/uv:$HOME/.local/share/uv/python" goose run
+
+# Bind a virtual environment
+EXTRA_PATH=/path/to/.venv goose run
+```
 
 ## Whitelisted Environment Variables
 
