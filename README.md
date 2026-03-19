@@ -114,6 +114,10 @@ The following environment variables are passed through to the sandbox:
 - **Editor**: `EDITOR`, `VISUAL`
 - **Development**: `GOPATH`, `GOROOT`, `NODE_PATH`, `PYTHONPATH`, `JAVA_HOME`
 
+## TODO
+
+- Add support for macOS
+
 ## Troubleshooting
 
 ### "bad interpreter: No such file or directory"
@@ -135,7 +139,3 @@ EXTRA_PATH=/path/to/mcp-server/.venv goose run
 ### Network-related features don't work
 
 By default, network is shared. If you enable `GOOSE_ISOLATE_NETWORK`, Goose won't have network access.
-
-## License
-
-MIT
